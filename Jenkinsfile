@@ -11,10 +11,21 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Cloning the repository...'
-                 bat '''
-                       "C:\\Program Files\\Git\\bin\\git.exe" --version
-                     '''
-                bat 'git clone https://github.com/IbnAyoub65/pipeline.git'
+                // Vérifier la version de Git installée
+                bat '''
+                    "C:\\Program Files\\Git\\bin\\git.exe" --version
+                '''
+                // Vérifier si le dossier 'pipeline' existe déjà
+                bat '''
+                    IF EXIST pipeline (
+                        echo "Directory 'pipeline' exists. Pulling the latest changes..."
+                        cd pipeline
+                        git pull
+                    ) ELSE (
+                        echo "Cloning the repository..."
+                        git clone https://github.com/IbnAyoub65/pipeline.git
+                    )
+                '''
                 dir('pipeline') {
                     bat 'git checkout main'
                 }
