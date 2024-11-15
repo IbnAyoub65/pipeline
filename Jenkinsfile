@@ -1,75 +1,66 @@
 pipeline {
     agent any
-    environment {
-        DOCKER_IMAGE = "spring-docker-pipeline"
-        DOCKER_TAG = "latest"
-    }
 
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    // Cloner le dépôt Git explicitement
-                    bat 'git clone https://github.com/IbnAyoub65/pipeline.git .'
-                }
+                echo 'Checking out the code...'
+                // Utilisation de Git pour récupérer le code source
+                bat 'git checkout main'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    // Construire l'image Docker
-                    sh 'docker build -t $DOCKER_IMAGE:$DOCKER_TAG .'
-                }
+                echo 'Building the Docker image...'
+                // Construction de l'image Docker basée sur `spring-docker-pipeline`
+                bat 'docker build -t spring-docker-pipeline:latest .'
             }
         }
 
-        stage('Run Tests in Docker') {
+        stage('Run Tests') {
             steps {
-                script {
-                    // Tester l'application dans un conteneur Docker
-                    sh 'docker run --rm $DOCKER_IMAGE:$DOCKER_TAG java -jar /app/pipeline-0.0.1-SNAPSHOT.jar'
-                }
+                echo 'Running tests inside Docker container...'
+                // Lancement des tests dans un conteneur temporaire basé sur l'image Docker
+                bat '''
+                docker run --rm --name spring-test-container spring-docker-pipeline:latest \\
+                bash -c "mvn test"
+                '''
             }
         }
 
         stage('Push Docker Image') {
-            when {
-                branch 'main' // Push uniquement sur la branche principale
-            }
             steps {
-                script {
-                    // Authentification et poussée de l'image Docker vers Docker Hub
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh """
-                            echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                            docker tag $DOCKER_IMAGE:$DOCKER_TAG \$DOCKER_USER/$DOCKER_IMAGE:$DOCKER_TAG
-                            docker push \$DOCKER_USER/$DOCKER_IMAGE:$DOCKER_TAG
-                        """
-                    }
-                }
+                echo 'Pushing Docker image to registry...'
+                // Authentification et envoi de l'image Docker au registre
+                bat 'docker login -u sambouyaya -p passer@123'
+                bat 'docker tag spring-docker-pipeline:latest sambouyaya/spring-docker-pipeline:latest'
+                bat 'docker push sambouyaya/spring-docker-pipeline:latest'
             }
         }
 
-        stage('Deploy to Docker') {
+        stage('Deploy Application') {
             steps {
-                script {
-                    // Déployer l'application sur le serveur Docker
-                    sh """
-                        docker rm -f mon-app || true
-                        docker run -d -p 8080:8080 --name mon-app $DOCKER_IMAGE:$DOCKER_TAG
-                    """
-                }
+                echo 'Deploying the application...'
+                // Déploiement de l'application avec Docker
+                bat '''
+                docker stop spring-docker-app || echo "No running container to stop"
+                docker rm spring-docker-app || echo "No container to remove"
+                docker run -d --name spring-docker-app -p 8080:8080 sambouyaya/spring-docker-pipeline:latest
+                '''
             }
         }
     }
 
     post {
+        always {
+            echo 'Pipeline execution completed.'
+        }
         success {
-            echo 'Pipeline terminé avec succès.'
+            echo 'Pipeline executed successfully!'
         }
         failure {
-            echo 'Le pipeline a échoué.'
+            echo 'Pipeline failed!'
         }
     }
 }
