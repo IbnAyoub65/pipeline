@@ -1,15 +1,11 @@
-# Première étape : Construction du JAR avec Maven et Java 17
-FROM maven:3.8.1-openjdk-17 AS build
+FROM maven:3.6.3-amazoncorretto AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package
 
-# Deuxième étape : Image finale avec OpenJDK
-FROM openjdk:17-slim
+FROM openjdk:17-slim-bullseye
 WORKDIR /app
-
-# Copier le JAR généré dans la première étape
-COPY --from=build /app/target/*.jar /app/pipeline-0.0.1-SNAPSHOT.jar
-
-# Commande d'exécution du JAR
+RUN apt-get update && apt-get install -y maven
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} /app/pipeline-0.0.1-SNAPSHOT.jar
 ENTRYPOINT ["java", "-jar", "/app/pipeline-0.0.1-SNAPSHOT.jar"]
