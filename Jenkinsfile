@@ -2,8 +2,8 @@ pipeline {
     agent any // Exécute sur n'importe quel agent disponible
 
     environment {
-        DOCKER_IMAGE = "spring-docker-demo:1.0" // Nom de l'image Docker locale avec tag
-        DOCKER_HUB_REPO = "sambouyaya/spring-docker-demo" // Répertoire Docker Hub
+        DOCKER_IMAGE = "spring-docker-demo" // Nom de l'image Docker locale avec tag
+        DOCKER_HUB_REPO = "sambouyaya/spring-docker-pipeline "// Répertoire Docker Hub
     }
 
     stages {
@@ -39,7 +39,7 @@ pipeline {
             steps {
                 // Pousser l'image Docker sur Docker Hub
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                    docker.withRegistry('https://index.docker.io/v1/','dockerhub-credentials') {
                         docker.image(env.DOCKER_IMAGE).push()
                     }
                 }
