@@ -46,7 +46,7 @@ pipeline {
                    )
                '''
                // Exécuter la commande de build Docker
-               bat 'docker build -f Dockerfile -t spring-docker-pipeline:latest .'
+               bat 'docker build -f DockerFile -t spring-docker-pipeline:latest .'
            }
         }
 
