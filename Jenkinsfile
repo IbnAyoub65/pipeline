@@ -11,6 +11,9 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Cloning the repository...'
+                 bat '''
+                       "C:\\Program Files\\Git\\bin\\git.exe" --version
+                     '''
                 bat 'git clone https://github.com/IbnAyoub65/pipeline.git'
                 dir('pipeline') {
                     bat 'git checkout main'
