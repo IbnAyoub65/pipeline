@@ -54,9 +54,9 @@ pipeline {
             steps {
                 echo 'Running tests inside Docker container...'
                 bat '''
-                docker run --rm --name spring-test-container spring-docker-pipeline:latest ^
-                bash -c "mvn test"
-                '''
+                     docker run --rm --name spring-test-container ^
+                    --entrypoint mvn spring-docker-pipeline:latest test
+                    '''
             }
         }
 
