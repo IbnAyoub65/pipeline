@@ -18,7 +18,7 @@ pipeline {
                     echo "Dockerfile not found in the current directory!"
                     exit /b 1
                 )
-                docker build -t spring-docker-pipeline:latest .
+                docker build -t -f Dockerfile spring-docker-pipeline:latest .
                 '''
             }
         }
