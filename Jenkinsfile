@@ -1,21 +1,15 @@
 pipeline {
     agent any
     environment {
-        // Définir l'image Docker (vous pouvez également configurer une variable pour le nom de votre registre Docker)
+        // Définir l'image Docker et le registre
         DOCKER_IMAGE = "spring-docker-pipeline"
-        DOCKER_REGISTRY = "Docker Hub" // Remplacez par votre registre Docker si nécessaire (par ex. Docker Hub)
         DOCKER_TAG = "latest"
-    }
-
-    tools {
-        // Utilisez Docker installé sur Jenkins
-        dockerTool 'Docker'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Récupérer le code source du dépôt Git
+                // Récupérer le code source depuis le dépôt Git
                 checkout scm
             }
         }
@@ -32,8 +26,7 @@ pipeline {
         stage('Run Tests in Docker') {
             steps {
                 script {
-                    // Exécuter les tests dans le conteneur Docker
-                    // Ici, vous pouvez ajouter des tests ou simplement vérifier si le conteneur démarre correctement
+                    // Tester l'application en exécutant le conteneur Docker
                     sh 'docker run --rm $DOCKER_IMAGE:$DOCKER_TAG java -jar /app/pipeline-0.0.1-SNAPSHOT.jar'
                 }
             }
@@ -41,17 +34,16 @@ pipeline {
 
         stage('Push Docker Image') {
             when {
-                branch 'main' // Push uniquement sur la branche principale
+                branch 'main' // Pousser uniquement sur la branche principale
             }
             steps {
                 script {
-                    // Pousser l'image Docker vers le registre Docker (Docker Hub ou autre)
-                    // Connectez-vous à Docker si nécessaire
+                    // Authentification et poussée de l'image Docker vers un registre (Docker Hub)
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh """
                             echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                            docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$DOCKER_TAG
-                            docker push $DOCKER_REGISTRY/$DOCKER_USER/$DOCKER_IMAGE:$DOCKER_TAG
+                            docker tag $DOCKER_IMAGE:$DOCKER_TAG \$DOCKER_USER/$DOCKER_IMAGE:$DOCKER_TAG
+                            docker push \$DOCKER_USER/$DOCKER_IMAGE:$DOCKER_TAG
                         """
                     }
                 }
@@ -61,9 +53,9 @@ pipeline {
         stage('Deploy to Docker') {
             steps {
                 script {
-                    // Déployer l'image Docker sur un serveur (en utilisant un conteneur Docker pour le déploiement)
-                    // Cela suppose que vous avez accès à un serveur Docker et que vous avez configuré un hôte Docker accessible
+                    // Supprimer le conteneur existant et déployer le nouveau
                     sh """
+                        docker rm -f mon-app || true
                         docker run -d -p 8080:8080 --name mon-app $DOCKER_IMAGE:$DOCKER_TAG
                     """
                 }
@@ -73,10 +65,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully.'
+            echo 'Pipeline terminé avec succès.'
         }
         failure {
-            echo 'Pipeline failed.'
+            echo 'Le pipeline a échoué.'
         }
     }
 }
