@@ -1,7 +1,6 @@
 pipeline {
     agent any
     environment {
-        // Définir l'image Docker et le registre
         DOCKER_IMAGE = "spring-docker-pipeline"
         DOCKER_TAG = "latest"
     }
@@ -9,8 +8,10 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Récupérer le code source depuis le dépôt Git
-                checkout scm
+                script {
+                    // Cloner le dépôt Git explicitement
+                    sh 'git clone https://github.com/IbnAyoub65/pipeline.git .'
+                }
             }
         }
 
@@ -26,7 +27,7 @@ pipeline {
         stage('Run Tests in Docker') {
             steps {
                 script {
-                    // Tester l'application en exécutant le conteneur Docker
+                    // Tester l'application dans un conteneur Docker
                     sh 'docker run --rm $DOCKER_IMAGE:$DOCKER_TAG java -jar /app/pipeline-0.0.1-SNAPSHOT.jar'
                 }
             }
@@ -34,11 +35,11 @@ pipeline {
 
         stage('Push Docker Image') {
             when {
-                branch 'main' // Pousser uniquement sur la branche principale
+                branch 'main' // Push uniquement sur la branche principale
             }
             steps {
                 script {
-                    // Authentification et poussée de l'image Docker vers un registre (Docker Hub)
+                    // Authentification et poussée de l'image Docker vers Docker Hub
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh """
                             echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
@@ -53,7 +54,7 @@ pipeline {
         stage('Deploy to Docker') {
             steps {
                 script {
-                    // Supprimer le conteneur existant et déployer le nouveau
+                    // Déployer l'application sur le serveur Docker
                     sh """
                         docker rm -f mon-app || true
                         docker run -d -p 8080:8080 --name mon-app $DOCKER_IMAGE:$DOCKER_TAG
