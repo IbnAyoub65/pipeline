@@ -13,8 +13,13 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building the Docker image...'
-                // Construction de l'image Docker basée sur `spring-docker-pipeline`
-                bat 'docker build -t spring-docker-pipeline:latest .'
+                bat '''
+                if not exist Dockerfile (
+                    echo "Dockerfile not found in the current directory!"
+                    exit /b 1
+                )
+                docker build -t spring-docker-pipeline:latest .
+                '''
             }
         }
 
