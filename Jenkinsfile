@@ -50,14 +50,15 @@ pipeline {
            }
         }
 
-       stage('Run Tests') {
-           steps {
-               echo 'Running tests inside Docker container with Maven...'
-               bat '''
+        stage('Run Tests') {
+            steps {
+                echo 'Running tests inside Docker container with Maven...'
+                bat '''
                    docker run --rm --name spring-test-container ^
                   --entrypoint mvn spring-docker-pipeline:latest test
                    '''
-       }
+            }
+        }
 
         stage('Push Docker Image') {
             steps {
