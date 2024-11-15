@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Récupérer le code depuis le dépôt GitHub
-                git 'https://github.com/IbnAyoub65/pipeline.git'
+                git branch: 'main', url: 'https://github.com/IbnAyoub65/pipeline.git'
             }
         }
 
