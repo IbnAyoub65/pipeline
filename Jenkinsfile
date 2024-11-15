@@ -10,7 +10,7 @@ pipeline {
             steps {
                 script {
                     // Cloner le dépôt Git explicitement
-                    sh 'git clone https://github.com/IbnAyoub65/pipeline.git .'
+                    bat 'git clone https://github.com/IbnAyoub65/pipeline.git .'
                 }
             }
         }
