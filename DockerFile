@@ -1,9 +1,15 @@
-FROM maven:3.6.3-amazoncorretto
+# Première étape : Construction du JAR avec Maven
+FROM maven:3.6.3-amazoncorretto AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package
+
+# Deuxième étape : Image finale avec OpenJDK
 FROM openjdk:24-slim-bullseye
 WORKDIR /app
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} /app/pipeline-0.0.1-SNAPSHOT.jar
-ENTRYPOINT ["java","-jar","/app/pipeline-0.0.1-SNAPSHOT.jar"]
+
+# Copier le JAR généré dans la première étape
+COPY --from=build /app/target/*.jar /app/pipeline-0.0.1-SNAPSHOT.jar
+
+# Commande d'exécution du JAR
+ENTRYPOINT ["java", "-jar", "/app/pipeline-0.0.1-SNAPSHOT.jar"]
