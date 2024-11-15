@@ -3,7 +3,7 @@ pipeline {
     environment {
         // Définir l'image Docker (vous pouvez également configurer une variable pour le nom de votre registre Docker)
         DOCKER_IMAGE = "spring-docker-pipeline"
-        DOCKER_REGISTRY = "docker.io" // Remplacez par votre registre Docker si nécessaire (par ex. Docker Hub)
+        DOCKER_REGISTRY = "Docker Hub" // Remplacez par votre registre Docker si nécessaire (par ex. Docker Hub)
         DOCKER_TAG = "latest"
     }
 
