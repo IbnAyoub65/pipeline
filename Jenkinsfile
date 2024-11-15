@@ -1,12 +1,17 @@
 pipeline {
     agent any
 
+
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out the code...'
-                // Utilisation de Git pour récupérer le code source
-                bat 'git checkout main'
+                echo 'Cloning the repository...'
+                // Clonage du dépôt Git
+                bat 'git clone https://github.com/IbnAyoub65/pipeline.git'
+                dir('pipeline') {
+                    // Passer à la branche main si nécessaire
+                    bat 'git checkout main'
+                }
             }
         }
 
