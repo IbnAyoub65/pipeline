@@ -1,15 +1,18 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_REGISTRY = "sambouyaya"
+        DOCKER_IMAGE = "spring-docker-pipeline"
+        IMAGE_TAG = "latest"
+    }
 
     stages {
         stage('Checkout') {
             steps {
                 echo 'Cloning the repository...'
-                // Clonage du dépôt Git
                 bat 'git clone https://github.com/IbnAyoub65/pipeline.git'
                 dir('pipeline') {
-                    // Passer à la branche main si nécessaire
                     bat 'git checkout main'
                 }
             }
@@ -19,6 +22,8 @@ pipeline {
             steps {
                 echo 'Building the Docker image...'
                 bat '''
+                echo "Listing files in the current directory:"
+                dir
                 if not exist Dockerfile (
                     echo "Dockerfile not found in the current directory!"
                     exit /b 1
@@ -31,9 +36,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo 'Running tests inside Docker container...'
-                // Lancement des tests dans un conteneur temporaire basé sur l'image Docker
                 bat '''
-                docker run --rm --name spring-test-container spring-docker-pipeline:latest \\
+                docker run --rm --name spring-test-container spring-docker-pipeline:latest ^
                 bash -c "mvn test"
                 '''
             }
@@ -42,21 +46,21 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 echo 'Pushing Docker image to registry...'
-                // Authentification et envoi de l'image Docker au registre
-                bat 'docker login -u sambouyaya -p passer@123'
-                bat 'docker tag spring-docker-pipeline:latest sambouyaya/spring-docker-pipeline:latest'
-                bat 'docker push sambouyaya/spring-docker-pipeline:latest'
+                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
+                }
+                bat "docker tag spring-docker-pipeline:latest %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%IMAGE_TAG%"
+                bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%IMAGE_TAG%"
             }
         }
 
         stage('Deploy Application') {
             steps {
                 echo 'Deploying the application...'
-                // Déploiement de l'application avec Docker
                 bat '''
                 docker stop spring-docker-app || echo "No running container to stop"
                 docker rm spring-docker-app || echo "No container to remove"
-                docker run -d --name spring-docker-app -p 8080:8080 sambouyaya/spring-docker-pipeline:latest
+                docker run -d --name spring-docker-app -p 8080:8080 %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%IMAGE_TAG%
                 '''
             }
         }
