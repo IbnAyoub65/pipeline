@@ -64,7 +64,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 echo 'Pushing Docker image to registry...'
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'sambouyayaE', passwordVariable: 'passer@123')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
                 }
                 bat "docker tag spring-docker-pipeline:latest %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%IMAGE_TAG%"
