@@ -55,7 +55,7 @@ pipeline {
               echo 'Running tests inside Docker container with Maven...'
                    bat '''
                         docker run --rm --name spring-test-container ^
-                       -v C:/Users/Yaya Sambou/Desktop/Mis_en_place_pipeline:/app ^
+                       -v C:/Users/Yaya Sambou/Desktop/Mis_en_place_pipeline/pipeline:/app ^
                        -w /app maven:3.9.5-eclipse-temurin-17 mvn test
                    '''
              }
