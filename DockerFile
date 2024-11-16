@@ -1,11 +1,11 @@
-# Étape 1 : Construction de l'application
-FROM maven:3.9.5-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY . .
-RUN mvn clean package -DskipTests
+# Utiliser une image de base avec Java 17
+FROM eclipse-temurin:17-jdk
 
-# Étape 2 : Image finale
-FROM openjdk:17-slim
+# Répertoire d'application dans le conteneur
 WORKDIR /app
-COPY --from=build /app/target/*.jar /app/pipeline-0.0.1-SNAPSHOT.jar
+
+# Copier le fichier JAR dans le conteneur
+COPY target/*.jar /app/pipeline-0.0.1-SNAPSHOT.jar
+
+# Commande pour exécuter l'application Spring Boot
 ENTRYPOINT ["java", "-jar", "/app/pipeline-0.0.1-SNAPSHOT.jar"]
